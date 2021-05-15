@@ -26,6 +26,7 @@ micronaut {
 }
 
 dependencies {
+    implementation("br.com.caelum.stella:caelum-stella-core:2.1.5")
     kapt("io.micronaut.data:micronaut-data-processor")
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
@@ -41,8 +42,9 @@ dependencies {
     testImplementation("org.testcontainers:mysql")
     testImplementation("org.testcontainers:testcontainers")
     implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-    testImplementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-http-client")
 }
 
 
