@@ -9,7 +9,7 @@ import javax.validation.constraints.Email
 enum class TipoDeChave {
 
     CPF {
-        override fun chaveValida(valor: String?, context: ConstraintValidatorContext): Boolean {
+        override fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean {
             if (valor == null) {
                 return false
             }
@@ -19,7 +19,7 @@ enum class TipoDeChave {
     },
     TELEFONE {
         val regex = Regex("^\\+[1-9][0-9]\\d{1,14}\$")
-        override fun chaveValida(valor: String?, context: ConstraintValidatorContext): Boolean {
+        override fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean {
             if (valor == null) {
                 return false
             }
@@ -28,18 +28,18 @@ enum class TipoDeChave {
 
     },
     EMAIL {
-        override fun chaveValida(valor: String?, context: ConstraintValidatorContext): Boolean {
+        override fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean {
             if (valor == null) {
                 return false
             }
-            return EmailValidator().isValid(valor, AnnotationValue("email"),context)
+            return EmailValidator().isValid(valor, AnnotationValue("email"), context)
         }
 
     },
     ALEATORIA {
-        override fun chaveValida(valor: String?, context: ConstraintValidatorContext): Boolean = true
+        override fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean = true
     };
 
-    abstract fun chaveValida(valor: String?, context: ConstraintValidatorContext): Boolean
+    abstract fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean
 
 }

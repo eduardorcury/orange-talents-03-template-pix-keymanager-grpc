@@ -23,7 +23,6 @@ class ExceptionHandlerInterceptor(
         try {
             return context.proceed()
         } catch (e: Exception) {
-
             resolver.resolve(e)
                 .handle(e)
                 .let { status ->  StatusProto.toStatusException(status) }
