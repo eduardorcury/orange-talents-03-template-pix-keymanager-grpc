@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 @Constraint(validatedBy = [ChavePixValidator::class])
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ChavePixValida(
-    val message: String = "Tipo de chave\${ validatedValue.tipoDeChave} inválido",
+    val message: String = "Formato de chave \${validatedValue.tipoDeChave} inválido",
     val groups: Array<KClass<Any>> = [],
     val payload: Array<KClass<Payload>> = []
 )

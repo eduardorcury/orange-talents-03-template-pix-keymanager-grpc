@@ -3,6 +3,7 @@ package br.com.zup.pix.cadastro
 import br.com.zup.pix.ChavePix
 import br.com.zup.pix.conta.Conta
 import br.com.zup.pix.enums.TipoDeChave
+import br.com.zup.pix.enums.TipoDeChave.*
 import br.com.zup.pix.enums.TipoDeConta
 import br.com.zup.pix.validacao.UUID
 import io.micronaut.core.annotation.Introspected
@@ -35,7 +36,13 @@ data class NovaChavePix(
         checkNotNull(idTitular)
         checkNotNull(tipoDeChave)
         checkNotNull(valor)
-        return ChavePix(idTitular, tipoDeChave, valor, conta)
+        return ChavePix(
+            idTitular = idTitular,
+            tipoDeChave = tipoDeChave,
+            valor = if (!tipoDeChave.equals(ALEATORIA)) this.valor
+                    else java.util.UUID.randomUUID().toString(),
+            conta = conta
+        )
     }
 
 }

@@ -11,6 +11,10 @@ service KeymanagerGrpcService {
   rpc cadastro (CadastroPixRequest) returns (CadastroPixResponse) {}
 }
 
+message ValidationErrors {
+  repeated string message = 1;
+}
+
 enum TipoDeChave {
   TIPO_CHAVE_DESCONHECIDO = 0;
   CPF = 1;

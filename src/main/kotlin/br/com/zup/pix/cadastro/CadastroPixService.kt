@@ -1,5 +1,7 @@
 package br.com.zup.pix.cadastro
 
+import br.com.zup.compartilhado.exceptions.ChavePixExistenteException
+import br.com.zup.compartilhado.exceptions.RecursoNaoEncontradoException
 import br.com.zup.pix.ChavePix
 import br.com.zup.pix.ChavePixRepository
 import br.com.zup.pix.SistemaErpClient
@@ -25,11 +27,12 @@ class CadastroPixService(
     fun cadastrar(@Valid novaChave: NovaChavePix): ChavePix {
 
         if (repository.existsByValor(novaChave.valor!!)) {
-            throw IllegalStateException("Chave Pix ${novaChave.valor} já existente")
+            throw ChavePixExistenteException("Chave Pix ${novaChave.valor} já existente")
         }
 
         val httpResponse = client.retornaDadosCliente(novaChave.idTitular!!, novaChave.tipoDeConta!!.name)
-        val conta = httpResponse.body() ?: throw HttpStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado")
+        val conta = httpResponse.body() ?:
+                    throw RecursoNaoEncontradoException("Cliente não existe ou não possui conta do tipo ${novaChave.tipoDeConta}")
 
         val chavePix = novaChave.toModel(conta.toModel())
         return repository.save(chavePix)
