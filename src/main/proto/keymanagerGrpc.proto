@@ -7,8 +7,14 @@ option objc_class_prefix = "HLW";
 
 package br.com.zup;
 
-service KeymanagerGrpcService {
+import "google/protobuf/empty.proto";
+
+service KeymanagerCadastraGrpcService {
   rpc cadastro (CadastroPixRequest) returns (CadastroPixResponse) {}
+}
+
+service KeymanagerDeletaGrpcService {
+  rpc deleta (DeletaPixRequest) returns (google.protobuf.Empty) {}
 }
 
 message ValidationErrors {
@@ -38,4 +44,9 @@ message CadastroPixRequest {
 
 message CadastroPixResponse {
   string pixId = 1;
+}
+
+message DeletaPixRequest {
+  string pixId = 1;
+  string clienteId = 2;
 }

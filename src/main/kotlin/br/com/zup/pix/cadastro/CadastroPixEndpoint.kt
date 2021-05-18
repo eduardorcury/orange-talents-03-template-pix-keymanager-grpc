@@ -2,7 +2,8 @@ package br.com.zup.pix.cadastro
 
 import br.com.zup.CadastroPixRequest
 import br.com.zup.CadastroPixResponse
-import br.com.zup.KeymanagerGrpcServiceGrpc
+import br.com.zup.KeymanagerCadastraGrpcServiceGrpc
+import br.com.zup.KeymanagerCadastraGrpcServiceGrpc.*
 import br.com.zup.compartilhado.ErrorHandler
 import br.com.zup.pix.ChavePix
 import br.com.zup.pix.converter
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 @ErrorHandler
 class CadastroPixEndpoint(@Inject val service: CadastroPixService)
-    : KeymanagerGrpcServiceGrpc.KeymanagerGrpcServiceImplBase() {
+    : KeymanagerCadastraGrpcServiceImplBase() {
 
     private val LOGGER = LoggerFactory.getLogger(this::class.java)
 
@@ -29,4 +30,5 @@ class CadastroPixEndpoint(@Inject val service: CadastroPixService)
         responseObserver.onCompleted()
 
     }
+
 }

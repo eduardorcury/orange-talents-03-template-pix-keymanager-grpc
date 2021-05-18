@@ -5,8 +5,6 @@ import br.com.zup.compartilhado.exceptions.RecursoNaoEncontradoException
 import br.com.zup.pix.ChavePix
 import br.com.zup.pix.ChavePixRepository
 import br.com.zup.pix.SistemaErpClient
-import io.micronaut.http.HttpStatus
-import io.micronaut.http.exceptions.HttpStatusException
 import io.micronaut.validation.Validated
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
