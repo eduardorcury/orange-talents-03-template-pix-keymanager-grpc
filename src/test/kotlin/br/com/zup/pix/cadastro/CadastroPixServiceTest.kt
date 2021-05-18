@@ -10,7 +10,6 @@ import br.com.zup.pix.enums.TipoDeConta
 import io.micronaut.http.HttpResponse
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,8 +18,6 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import java.util.*
 import javax.inject.Inject
-import javax.validation.ConstraintViolation
-import javax.validation.ConstraintViolationException
 
 @MicronautTest(transactional = false)
 internal class CadastroPixServiceTest {

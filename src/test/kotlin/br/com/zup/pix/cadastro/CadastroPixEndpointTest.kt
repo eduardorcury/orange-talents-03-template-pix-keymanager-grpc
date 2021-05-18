@@ -1,9 +1,8 @@
 package br.com.zup.pix.cadastro
 
 import br.com.zup.CadastroPixRequest
-import br.com.zup.KeymanagerGrpcServiceGrpc.KeymanagerGrpcServiceBlockingStub
-import br.com.zup.KeymanagerGrpcServiceGrpc.newBlockingStub
-import br.com.zup.pix.ChavePix
+import br.com.zup.KeymanagerCadastraGrpcServiceGrpc.KeymanagerCadastraGrpcServiceBlockingStub
+import br.com.zup.KeymanagerCadastraGrpcServiceGrpc.newBlockingStub
 import br.com.zup.pix.ChavePixRepository
 import br.com.zup.pix.SistemaErpClient
 import br.com.zup.pix.conta.DadosContaResponse
@@ -19,7 +18,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -33,7 +31,7 @@ import javax.inject.Singleton
 @MicronautTest(transactional = false)
 internal class CadastroPixEndpointTest(
     private val repository: ChavePixRepository,
-    private val grcpClient: KeymanagerGrpcServiceBlockingStub,
+    private val grcpClient: KeymanagerCadastraGrpcServiceBlockingStub,
 ) {
 
     @field:Inject
@@ -175,7 +173,7 @@ internal class CadastroPixEndpointTest(
     @Factory
     class Clients {
         @Singleton
-        fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerGrpcServiceBlockingStub =
+        fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerCadastraGrpcServiceBlockingStub =
             newBlockingStub(channel)
     }
 
