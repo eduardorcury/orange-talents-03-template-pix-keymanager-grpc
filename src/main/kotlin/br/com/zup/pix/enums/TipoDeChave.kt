@@ -15,6 +15,7 @@ enum class TipoDeChave {
             }
             return CPFValidator().invalidMessagesFor(valor).isEmpty()
         }
+        override val nomeBCB: String = "CPF"
 
     },
     TELEFONE {
@@ -25,6 +26,7 @@ enum class TipoDeChave {
             }
             return valor.matches(regex)
         }
+        override val nomeBCB: String = "PHONE"
 
     },
     EMAIL {
@@ -34,12 +36,28 @@ enum class TipoDeChave {
             }
             return EmailValidator().isValid(valor, AnnotationValue("email"), context)
         }
+        override val nomeBCB: String = "EMAIL"
 
     },
     ALEATORIA {
         override fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean = true
+        override val nomeBCB: String = "RANDOM"
     };
 
     abstract fun chaveValida(valor: String?, context: ConstraintValidatorContext?): Boolean
+
+    abstract val nomeBCB: String
+
+    companion object {
+        fun fromBcb(valor: String): TipoDeChave {
+            return when(valor) {
+                "CPF" -> CPF
+                "PHONE" -> TELEFONE
+                "EMAIL" -> EMAIL
+                "RANDOM" -> ALEATORIA
+                else -> throw IllegalStateException("Chave de tipo $valor não suportada")
+            }
+        }
+    }
 
 }

@@ -14,3 +14,5 @@ jpa.default.properties.hibernate.hbm2ddl.auto: update
 sistemas:
   erp:
     url: ${ERP_URL:`http://localhost:9091`}
+  bcb:
+    url: ${ERP_URL:`http://localhost:8082`}

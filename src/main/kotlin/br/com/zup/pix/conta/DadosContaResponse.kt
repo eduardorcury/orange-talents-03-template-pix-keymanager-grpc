@@ -13,6 +13,7 @@ data class DadosContaResponse(
     @NotBlank val agencia: String?,
     @NotBlank val numero: String?,
     @NotBlank val titular: String?,
+    @NotBlank val cpf: String?,
 ) {
 
     fun toModel(): Conta {
@@ -21,7 +22,8 @@ data class DadosContaResponse(
         checkNotNull(agencia)
         checkNotNull(numero)
         checkNotNull(titular)
-        return Conta(tipoDeConta, instituicao, agencia, numero, titular)
+        checkNotNull(cpf)
+        return Conta(tipoDeConta, instituicao, agencia, numero, titular, cpf)
     }
 
 }

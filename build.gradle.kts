@@ -53,6 +53,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
 
     implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.xml:micronaut-jackson-xml")
+
 }
 
 

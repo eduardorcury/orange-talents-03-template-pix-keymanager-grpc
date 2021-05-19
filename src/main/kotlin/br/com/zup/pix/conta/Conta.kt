@@ -23,7 +23,10 @@ class Conta(
     val numero: String,
 
     @Column(nullable = false)
-    val titular: String
+    val titular: String,
+
+    @Column(nullable = false)
+    val cpf: String
 
 ) {
 

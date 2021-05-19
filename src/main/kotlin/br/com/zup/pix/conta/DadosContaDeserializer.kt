@@ -17,7 +17,8 @@ class DadosContaDeserializer :
             instituicao = node.get("instituicao").get("nome").textValue(),
             agencia = node.get("agencia").textValue(),
             numero = node.get("numero").textValue(),
-            titular = node.get("titular").get("nome").textValue()
+            titular = node.get("titular").get("nome").textValue(),
+            cpf = node.get("titular").get("cpf").textValue()
         )
 
     }
