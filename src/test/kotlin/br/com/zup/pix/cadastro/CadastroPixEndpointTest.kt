@@ -3,9 +3,11 @@ package br.com.zup.pix.cadastro
 import br.com.zup.CadastroPixRequest
 import br.com.zup.KeymanagerCadastraGrpcServiceGrpc.KeymanagerCadastraGrpcServiceBlockingStub
 import br.com.zup.KeymanagerCadastraGrpcServiceGrpc.newBlockingStub
+import br.com.zup.pix.BcbClient
 import br.com.zup.pix.ChavePixRepository
 import br.com.zup.pix.SistemaErpClient
 import br.com.zup.pix.conta.DadosContaResponse
+import br.com.zup.pix.converter
 import br.com.zup.pix.enums.TipoDeChave
 import br.com.zup.pix.enums.TipoDeConta
 import io.grpc.ManagedChannel
@@ -15,6 +17,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -22,8 +25,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.*
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,21 +40,43 @@ internal class CadastroPixEndpointTest(
     @field:Inject
     lateinit var erpClient: SistemaErpClient
 
+    @field:Inject
+    lateinit var bcbClient: BcbClient
+
     @BeforeEach
     internal fun setUp() {
         repository.deleteAll()
     }
 
     @Test
-    internal fun `deve salvar nova chave no banco de dados`() {
+    internal fun `deve salvar nova chave no banco de dados e informar ao BCB`() {
 
-        val request = request()
-        val dadosConta = dadosDaConta()
+        /**
+         * Fluxo
+         * 1. Informar um CadastroPixRequest (protobuf)
+         * 2. O request é transformado em NovaChavePix
+         * 3. Faço uma requisição ao Client ERP e recebo os dados da conta
+         * 4. Os dados da conta são transformados em Conta
+         * 5. Com a NovaChavePix e Conta eu crio um request para o BCB CreatePixKeyRequest
+         * 6. Recebo um CreatePixKeyResponse do BCB
+         * 7. Transformo o CreatePixKeyResponse em Chave PIX
+         */
+
+        val request: CadastroPixRequest = request()
+        val dadosConta: DadosContaResponse = dadosDaConta()
+        val bcbRequest = CreatePixKeyRequest(
+            chavePix = request.converter(),
+            conta = dadosConta.toModel()
+        )
+        val bcbResponse = respostaBcb(bcbRequest)
 
         `when`(erpClient.retornaDadosCliente(
             request.idTitular!!,
             request.tipoDeConta!!.name)
         ).thenReturn(HttpResponse.ok(dadosConta))
+
+        `when`(bcbClient.cadastra(bcbRequest))
+            .thenReturn(HttpResponse.created(bcbResponse))
 
         val response = grcpClient.cadastro(request)
         assertNotNull(response.pixId)
@@ -59,6 +84,7 @@ internal class CadastroPixEndpointTest(
         val chaves = repository.findAll()
         assertTrue(chaves.isNotEmpty())
         with(chaves[0]) {
+            // Chave salva tem os dados do request
             assertTrue(idTitular == request.idTitular)
             assertTrue(tipoDeChave == TipoDeChave.valueOf(request.tipoDeChave.name))
             assertTrue(valor == request.valor)
@@ -68,7 +94,19 @@ internal class CadastroPixEndpointTest(
             assertTrue(conta.agencia == dadosConta.agencia)
             assertTrue(conta.numero == dadosConta.numero)
             assertTrue(conta.titular == dadosConta.titular)
+            assertTrue(conta.cpf == dadosConta.cpf)
+            // Chave salva tem os dados do BCB
+            assertTrue(tipoDeChave == TipoDeChave.fromBcb(bcbResponse.keyType))
+            assertTrue(valor == bcbResponse.key)
+            assertTrue(conta.tipo == TipoDeConta.fromBcb(bcbResponse.bankAccount.accountType))
+            assertTrue("60701190" == bcbResponse.bankAccount.participant)
+            assertTrue(conta.agencia == bcbResponse.bankAccount.branch)
+            assertTrue(conta.numero == bcbResponse.bankAccount.accountNumber)
+            assertTrue(conta.titular == bcbResponse.owner.name)
+            assertTrue(conta.cpf == bcbResponse.owner.taxIdNumber)
         }
+        verify(bcbClient).cadastra(bcbRequest)
+
     }
 
     @Test
@@ -81,11 +119,19 @@ internal class CadastroPixEndpointTest(
             .setIdTitular(UUID.randomUUID().toString())
             .build()
         val dadosConta = dadosDaConta()
+        val bcbRequest = CreatePixKeyRequest(
+            chavePix = request.converter(),
+            conta = dadosConta.toModel()
+        )
+        val bcbResponse = respostaBcb(bcbRequest)
 
         `when`(erpClient.retornaDadosCliente(
             request.idTitular!!,
             request.tipoDeConta!!.name)
         ).thenReturn(HttpResponse.ok(dadosConta))
+
+        `when`(bcbClient.cadastra(bcbRequest))
+            .thenReturn(HttpResponse.created(bcbResponse))
 
         val response = grcpClient.cadastro(request)
         assertNotNull(response.pixId)
@@ -117,11 +163,18 @@ internal class CadastroPixEndpointTest(
 
         val request = request()
         val dadosConta = dadosDaConta()
+        val bcbRequest = CreatePixKeyRequest(
+            chavePix = request.converter(),
+            conta = dadosConta.toModel()
+        )
 
         `when`(erpClient.retornaDadosCliente(
             request.idTitular!!,
             request.tipoDeConta!!.name)
         ).thenReturn(HttpResponse.ok(dadosConta))
+
+        `when`(bcbClient.cadastra(bcbRequest))
+            .thenReturn(HttpResponse.created(respostaBcb(bcbRequest)))
 
         grcpClient.cadastro(request)
 
@@ -170,6 +223,37 @@ internal class CadastroPixEndpointTest(
 
     }
 
+    @Test
+    internal fun `deve retornar INTERNAL para erro no client BCB`() {
+
+        val request: CadastroPixRequest = request()
+        val dadosConta: DadosContaResponse = dadosDaConta()
+        val bcbRequest = CreatePixKeyRequest(
+            chavePix = request.converter(),
+            conta = dadosConta.toModel()
+        )
+
+        `when`(erpClient.retornaDadosCliente(
+            request.idTitular!!,
+            request.tipoDeConta!!.name)
+        ).thenReturn(HttpResponse.ok(dadosConta))
+
+        `when`(bcbClient.cadastra(bcbRequest))
+            .thenReturn(HttpResponse.unprocessableEntity())
+
+        val erro = assertThrows<StatusRuntimeException> {
+            grcpClient.cadastro(request)
+        }
+
+        with(erro) {
+            assertEquals(INTERNAL.code, status.code)
+            assertEquals("BCB retornou erro: ${HttpStatus.UNPROCESSABLE_ENTITY}", status.description)
+        }
+
+        assertTrue(repository.findAll().isEmpty())
+
+    }
+
     @Factory
     class Clients {
         @Singleton
@@ -179,6 +263,9 @@ internal class CadastroPixEndpointTest(
 
     @MockBean(SistemaErpClient::class)
     fun erpClient() = mock(SistemaErpClient::class.java)
+
+    @MockBean(BcbClient::class)
+    fun bcbClient() = mock(BcbClient::class.java)
 
     private fun request() =
         CadastroPixRequest
@@ -195,6 +282,18 @@ internal class CadastroPixEndpointTest(
             instituicao = "ITAÚ",
             agencia = "0001",
             numero = "12345",
-            titular = "Eduardo"
+            titular = "Eduardo",
+            cpf = "87821765074"
         )
+
+    private fun respostaBcb(bcbRequest: CreatePixKeyRequest): CreatePixKeyResponse =
+        with(bcbRequest) {
+            CreatePixKeyResponse(
+                keyType = keyType,
+                key = key ?: UUID.randomUUID().toString(),
+                bankAccount = bankAccount,
+                owner = owner,
+                createdAt = LocalDateTime.now()
+            )
+        }
 }

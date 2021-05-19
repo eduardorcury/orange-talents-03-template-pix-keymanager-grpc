@@ -40,7 +40,7 @@ class DeletaPixService(
                 throw PermissaoNegadaException("Chave Pix de id ${request.pixId} " +
                         "não pertence ao usuário de id ${request.clienteId}")
             }
-            DeletePixKeyRequest(chavePix)
+            DeletePixKeyRequest(key = chavePix.valor)
                 .run { bcbClient.deleta(this, this.key) }
                 .let { bcbResponse -> if (bcbResponse.status == HttpStatus.OK) bcbResponse.body()
                                       else throw HttpClientException("Bcb retornou status ${bcbResponse.status}") }

@@ -2,7 +2,6 @@ package br.com.zup.pix.cadastro
 
 import br.com.zup.pix.ChavePix
 import br.com.zup.pix.conta.Conta
-import br.com.zup.pix.deleta.DeletaChaveData
 import br.com.zup.pix.enums.TipoDeChave
 import br.com.zup.pix.enums.TipoDeConta
 import java.time.LocalDateTime
@@ -10,14 +9,19 @@ import java.time.LocalDateTime
 const val PARTICIPANT: String = "60701190"
 
 data class CreatePixKeyRequest(
-    val chavePix: NovaChavePix,
-    val conta: Conta,
+    val keyType: String,
+    val key: String?,
+    val bankAccount: BankAccount,
+    val owner: Owner,
 ) {
-    val keyType: String = chavePix.tipoDeChave!!.nomeBCB
-    val key: String? = if (this.keyType != "RANDOM") chavePix.valor else null
-    val bankAccount: BankAccount = BankAccount(conta)
-    val owner: Owner = Owner(name = conta.titular,
-        taxIdNumber = conta.cpf)
+
+    constructor(chavePix: NovaChavePix, conta: Conta) : this(
+        keyType = chavePix.tipoDeChave!!.nomeBCB,
+        key = if (chavePix.tipoDeChave.nomeBCB != "RANDOM") chavePix.valor else null,
+        bankAccount = BankAccount(conta),
+        owner = Owner(name = conta.titular, taxIdNumber = conta.cpf)
+    )
+
 }
 
 data class BankAccount(
@@ -75,14 +79,13 @@ data class CreatePixKeyResponse(
 }
 
 data class DeletePixKeyRequest(
-    val chavePix: ChavePix
+    val key: String,
 ) {
-    val key: String = chavePix.valor
     val participant: String = PARTICIPANT
 }
 
 data class DeletePixKeyResponse(
     val key: String,
     val participant: String = PARTICIPANT,
-    val deletedAt: LocalDateTime
+    val deletedAt: LocalDateTime,
 )

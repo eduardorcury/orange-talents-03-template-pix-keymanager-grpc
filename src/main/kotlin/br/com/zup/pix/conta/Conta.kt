@@ -28,6 +28,4 @@ class Conta(
     @Column(nullable = false)
     val cpf: String
 
-) {
-
-}
+)

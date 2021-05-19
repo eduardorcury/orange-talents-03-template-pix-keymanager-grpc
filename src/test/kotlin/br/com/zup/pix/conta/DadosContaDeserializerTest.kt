@@ -31,7 +31,8 @@ internal class DadosContaDeserializerTest {
             instituicao = "ITAÚ UNIBANCO S.A.",
             agencia = "0001",
             numero = "291900",
-            titular = "Rafael M C Ponte"
+            titular = "Rafael M C Ponte",
+            cpf = "02467781054"
         )
 
         val response = DadosContaDeserializer()

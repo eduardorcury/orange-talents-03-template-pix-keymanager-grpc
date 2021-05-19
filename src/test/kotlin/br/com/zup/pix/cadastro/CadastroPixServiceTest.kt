@@ -2,9 +2,11 @@ package br.com.zup.pix.cadastro
 
 import br.com.zup.compartilhado.exceptions.ChavePixExistenteException
 import br.com.zup.compartilhado.exceptions.RecursoNaoEncontradoException
+import br.com.zup.pix.BcbClient
 import br.com.zup.pix.ChavePixRepository
 import br.com.zup.pix.SistemaErpClient
 import br.com.zup.pix.conta.DadosContaResponse
+import br.com.zup.pix.converter
 import br.com.zup.pix.enums.TipoDeChave
 import br.com.zup.pix.enums.TipoDeConta
 import io.micronaut.http.HttpResponse
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -29,7 +32,10 @@ internal class CadastroPixServiceTest {
     lateinit var repository: ChavePixRepository
 
     @field:Inject
-    lateinit var client: SistemaErpClient
+    lateinit var erpClient: SistemaErpClient
+
+    @field:Inject
+    lateinit var bcbClient: BcbClient
 
     @BeforeEach
     internal fun setUp() {
@@ -51,13 +57,22 @@ internal class CadastroPixServiceTest {
             instituicao = "ITAÚ",
             agencia = "0001",
             numero = "12345",
-            titular = "Eduardo"
+            titular = "Eduardo",
+            cpf = "87821765074"
         )
 
-        `when`(client.retornaDadosCliente(
+        val bcbRequest = CreatePixKeyRequest(
+            chavePix = novaChavePix,
+            conta = dadosConta.toModel()
+        )
+
+        `when`(erpClient.retornaDadosCliente(
             novaChavePix.idTitular!!,
             novaChavePix.tipoDeConta!!.name)
         ).thenReturn(HttpResponse.ok(dadosConta))
+
+        `when`(bcbClient.cadastra(bcbRequest))
+            .thenReturn(HttpResponse.created(respostaBcb(bcbRequest)))
 
         service.cadastrar(novaChavePix)
 
@@ -92,13 +107,22 @@ internal class CadastroPixServiceTest {
             instituicao = "ITAÚ",
             agencia = "0001",
             numero = "12345",
-            titular = "Eduardo"
+            titular = "Eduardo",
+            cpf = "87821765074"
         )
 
-        `when`(client.retornaDadosCliente(
+        val bcbRequest = CreatePixKeyRequest(
+            chavePix = novaChavePix,
+            conta = dadosConta.toModel()
+        )
+
+        `when`(erpClient.retornaDadosCliente(
             novaChavePix.idTitular!!,
             novaChavePix.tipoDeConta!!.name)
         ).thenReturn(HttpResponse.ok(dadosConta))
+
+        `when`(bcbClient.cadastra(bcbRequest))
+            .thenReturn(HttpResponse.created(respostaBcb(bcbRequest)))
 
         service.cadastrar(novaChavePix)
 
@@ -118,7 +142,7 @@ internal class CadastroPixServiceTest {
             tipoDeConta = TipoDeConta.CONTA_CORRENTE
         )
 
-        `when`(client.retornaDadosCliente(
+        `when`(erpClient.retornaDadosCliente(
             novaChavePix.idTitular!!,
             novaChavePix.tipoDeConta!!.name)
         ).thenReturn(HttpResponse.ok())
@@ -131,5 +155,19 @@ internal class CadastroPixServiceTest {
 
     @MockBean(SistemaErpClient::class)
     fun erpClient() = mock(SistemaErpClient::class.java)
+
+    @MockBean(BcbClient::class)
+    fun bcbClient() = mock(BcbClient::class.java)
+
+    private fun respostaBcb(bcbRequest: CreatePixKeyRequest): CreatePixKeyResponse =
+        with(bcbRequest) {
+            CreatePixKeyResponse(
+                keyType = keyType,
+                key = key!!,
+                bankAccount = bankAccount,
+                owner = owner,
+                createdAt = LocalDateTime.now()
+            )
+        }
 
 }
