@@ -30,7 +30,7 @@ class ExceptionHandlerInterceptor(
                 .also { LOGGER.error("""
                     Handling the exception ${e.javaClass.name} 
                     while processing the call: ${context.targetMethod}
-                    """.trimIndent()) }
+                    """.trimIndent(), e) }
             return null
         }
 

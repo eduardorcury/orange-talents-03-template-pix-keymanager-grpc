@@ -8,4 +8,6 @@ interface ChavePixRepository : JpaRepository<ChavePix, String> {
 
     fun existsByValor(valor: String): Boolean
 
+    fun findByValor(valor: String): ChavePix?
+
 }

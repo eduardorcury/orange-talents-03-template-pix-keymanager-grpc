@@ -1,13 +1,12 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "br.com.zup";
 option java_outer_classname = "KeymanagerGrpc";
-option objc_class_prefix = "HLW";
 
 package br.com.zup;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 service KeymanagerCadastraGrpcService {
   rpc cadastro (CadastroPixRequest) returns (CadastroPixResponse) {}
@@ -17,8 +16,25 @@ service KeymanagerDeletaGrpcService {
   rpc deleta (DeletaPixRequest) returns (google.protobuf.Empty) {}
 }
 
+service KeymanagerConsultaGrpcService {
+  rpc consultaInterna (ConsultaInternaRequest) returns (ConsultaInternaResponse) {}
+  rpc consultaExterna (ConsultaExternaRequest) returns (ConsultaExternaResponse) {}
+}
+
 message ValidationErrors {
   repeated string message = 1;
+}
+
+message Titular {
+  string nome = 1;
+  string cpf = 2;
+}
+
+message Conta {
+  string instituicao = 1;
+  string agencia = 2;
+  string numero = 3;
+  TipoDeConta tipo = 4;
 }
 
 enum TipoDeChave {
@@ -49,4 +65,31 @@ message CadastroPixResponse {
 message DeletaPixRequest {
   string pixId = 1;
   string clienteId = 2;
+}
+
+message ConsultaInternaRequest {
+  string pixId = 1;
+  string clienteId = 2;
+}
+
+message ConsultaExternaRequest {
+  string chave = 1;
+}
+
+message ConsultaInternaResponse {
+  string pixId = 1;
+  string clienteId = 2;
+  TipoDeChave tipoDeChave = 3;
+  string valor = 4;
+  Titular titular = 5;
+  Conta conta = 6;
+  google.protobuf.Timestamp criadaEm = 7;
+}
+
+message ConsultaExternaResponse {
+  TipoDeChave tipoDeChave = 1;
+  string valor = 2;
+  Titular titular = 3;
+  Conta conta = 4;
+  google.protobuf.Timestamp criadaEm = 5;
 }
