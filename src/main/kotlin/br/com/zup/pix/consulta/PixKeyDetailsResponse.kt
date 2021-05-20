@@ -1,15 +1,18 @@
 package br.com.zup.pix.consulta
 
-import br.com.zup.ConsultaExternaResponse
+import br.com.zup.ConsultaPixResponse
 import br.com.zup.Conta
 import br.com.zup.Titular
+import br.com.zup.pix.Instituicao
 import br.com.zup.pix.cadastro.BankAccount
 import br.com.zup.pix.cadastro.Owner
 import br.com.zup.pix.enums.TipoDeChave
 import br.com.zup.pix.enums.TipoDeConta
 import com.google.protobuf.Timestamp
 import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.ZoneId
+import br.com.zup.TipoDeChave as ChaveProto
+import br.com.zup.TipoDeConta as ContaProto
 
 data class PixKeyDetailsResponse(
     val keyType: String,
@@ -19,21 +22,21 @@ data class PixKeyDetailsResponse(
     val createdAt: LocalDateTime
 ) {
 
-    fun toResponse(): ConsultaExternaResponse = ConsultaExternaResponse
+    fun toResponse(): ConsultaPixResponse = ConsultaPixResponse
         .newBuilder()
-        .setTipoDeChave(br.com.zup.TipoDeChave.valueOf(TipoDeChave.fromBcb(this.keyType).name))
+        .setTipoDeChave(ChaveProto.valueOf(TipoDeChave.fromBcb(this.keyType).name))
         .setValor(this.key)
         .setTitular(Titular.newBuilder()
             .setNome(this.owner.name)
             .setCpf(this.owner.taxIdNumber))
         .setConta(Conta.newBuilder()
-            .setTipo(br.com.zup.TipoDeConta.valueOf(TipoDeConta.fromBcb(this.bankAccount.accountType).name))
+            .setTipo(ContaProto.valueOf(TipoDeConta.fromBcb(this.bankAccount.accountType).name))
             .setAgencia(this.bankAccount.branch)
             .setNumero(this.bankAccount.accountNumber)
-            .setInstituicao("ITAÚ"))
+            .setInstituicao(Instituicao.fromIspb(this.bankAccount.participant)))
         .setCriadaEm(Timestamp.newBuilder()
-            .setSeconds(this.createdAt.toInstant(ZoneOffset.of("Z")).epochSecond)
-            .setNanos(this.createdAt.toInstant(ZoneOffset.of("Z")).nano)
+            .setSeconds(this.createdAt.atZone(ZoneId.of("UTC")).toInstant().epochSecond)
+            .setNanos(this.createdAt.atZone(ZoneId.of("UTC")).toInstant().nano)
         )
         .build()
 }

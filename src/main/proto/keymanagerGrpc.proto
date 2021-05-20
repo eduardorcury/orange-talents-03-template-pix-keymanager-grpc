@@ -17,8 +17,7 @@ service KeymanagerDeletaGrpcService {
 }
 
 service KeymanagerConsultaGrpcService {
-  rpc consultaInterna (ConsultaInternaRequest) returns (ConsultaInternaResponse) {}
-  rpc consultaExterna (ConsultaExternaRequest) returns (ConsultaExternaResponse) {}
+  rpc consulta (ConsultaPixRequest) returns (ConsultaPixResponse) {}
 }
 
 message ValidationErrors {
@@ -67,16 +66,18 @@ message DeletaPixRequest {
   string clienteId = 2;
 }
 
-message ConsultaInternaRequest {
-  string pixId = 1;
-  string clienteId = 2;
+message ConsultaPixRequest {
+  message ConsultaInterna {
+    string pixId = 1;
+    string clienteId = 2;
+  }
+  oneof consulta {
+    ConsultaInterna interna = 1;
+    string chave = 2;
+  }
 }
 
-message ConsultaExternaRequest {
-  string chave = 1;
-}
-
-message ConsultaInternaResponse {
+message ConsultaPixResponse {
   string pixId = 1;
   string clienteId = 2;
   TipoDeChave tipoDeChave = 3;
@@ -84,12 +85,4 @@ message ConsultaInternaResponse {
   Titular titular = 5;
   Conta conta = 6;
   google.protobuf.Timestamp criadaEm = 7;
-}
-
-message ConsultaExternaResponse {
-  TipoDeChave tipoDeChave = 1;
-  string valor = 2;
-  Titular titular = 3;
-  Conta conta = 4;
-  google.protobuf.Timestamp criadaEm = 5;
 }
