@@ -28,8 +28,8 @@ class HttpClientExceptionHandler : ExceptionHandler<HttpClientException> {
                 }
                 return Status.newBuilder()
                     .setCode(Code.INTERNAL_VALUE)
-                    .setMessage("""Erro de tipo $type, $status. $title: $detail. 
-                          ${violations.map { "${it.field}: ${it.message}" }}""".trimIndent())
+                    .setMessage("Erro de tipo $type, $status. $title: $detail. " +
+                          "${violations.map { "${it.field}: ${it.message}" }}")
                     .addDetails(Any.pack(ValidationErrors
                         .newBuilder()
                         .addAllMessage(violations.map { "${it.field}: ${it.message}" })
