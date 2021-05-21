@@ -51,6 +51,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.9.0")
     testImplementation("org.mockito:mockito-junit-jupiter:3.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
+    testImplementation("org.hamcrest:hamcrest:2.2")
 
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.xml:micronaut-jackson-xml")

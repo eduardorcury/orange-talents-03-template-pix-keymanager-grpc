@@ -26,8 +26,8 @@ sealed class Consulta() {
 
     @Introspected
     data class ConsultaInterna(
-        @field:NotBlank @UUID val pixId: String,
-        @field:NotBlank @UUID val clienteId: String,
+        @field:NotBlank @field:UUID val pixId: String,
+        @field:NotBlank @field:UUID val clienteId: String,
     ) : Consulta() {
 
         override fun consulta(repository: ChavePixRepository, bcbClient: BcbClient): ConsultaPixResponse {
