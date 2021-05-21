@@ -8,7 +8,11 @@ import javax.inject.Singleton
 class DefaultExceptionHandler : ExceptionHandler<Exception> {
 
     override fun handle(exception: Exception) =
-        Status.newBuilder().setCode(Code.UNKNOWN_VALUE).build()
+        Status
+            .newBuilder()
+            .setCode(Code.UNKNOWN_VALUE)
+            .setMessage(exception.message)
+            .build()
 
     override fun supports(exception: Exception) = false
 

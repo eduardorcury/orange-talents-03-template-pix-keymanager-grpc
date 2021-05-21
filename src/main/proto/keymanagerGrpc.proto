@@ -20,6 +20,10 @@ service KeymanagerConsultaGrpcService {
   rpc consulta (ConsultaPixRequest) returns (ConsultaPixResponse) {}
 }
 
+service KeymanagerListaGrpcService {
+  rpc lista (ListaPixRequest) returns (ListaPixResponse) {}
+}
+
 message ValidationErrors {
   repeated string message = 1;
 }
@@ -85,4 +89,22 @@ message ConsultaPixResponse {
   Titular titular = 5;
   Conta conta = 6;
   google.protobuf.Timestamp criadaEm = 7;
+}
+
+message ListaPixRequest {
+  string clienteId = 1;
+}
+
+message ListaPixResponse {
+
+  message itemChave {
+    string pixId = 1;
+    string clienteId = 2;
+    TipoDeChave tipoDeChave = 3;
+    string valor = 4;
+    TipoDeConta tipoDeConta = 5;
+    google.protobuf.Timestamp criadaEm = 6;
+  }
+  repeated itemChave chaves = 1;
+
 }

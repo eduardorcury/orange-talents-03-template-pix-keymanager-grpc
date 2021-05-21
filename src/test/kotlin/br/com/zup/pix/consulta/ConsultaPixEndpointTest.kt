@@ -1,9 +1,8 @@
 package br.com.zup.pix.consulta
 
 import br.com.zup.ConsultaPixRequest
-import br.com.zup.ConsultaPixResponse
-import br.com.zup.KeymanagerConsultaGrpcServiceGrpc.*
-import br.com.zup.Titular
+import br.com.zup.KeymanagerConsultaGrpcServiceGrpc.KeymanagerConsultaGrpcServiceBlockingStub
+import br.com.zup.KeymanagerConsultaGrpcServiceGrpc.newBlockingStub
 import br.com.zup.pix.BcbClient
 import br.com.zup.pix.ChavePix
 import br.com.zup.pix.ChavePixRepository
@@ -13,7 +12,6 @@ import br.com.zup.pix.cadastro.Owner
 import br.com.zup.pix.conta.Conta
 import br.com.zup.pix.enums.TipoDeChave
 import br.com.zup.pix.enums.TipoDeConta
-import com.google.protobuf.Timestamp
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -28,10 +26,16 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.*
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
+import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -254,6 +258,58 @@ internal class ConsultaPixEndpointTest(
 
     }
 
+    @ParameterizedTest
+    @MethodSource("geraDadosInvalidos")
+    internal fun `nao deve buscar com id pix ou id cliente invalidos`(
+        pixId: String, clienteId: String
+    ) {
+
+        val request = ConsultaPixRequest
+            .newBuilder()
+            .setInterna(
+                ConsultaPixRequest.ConsultaInterna
+                    .newBuilder()
+                    .setPixId(pixId)
+                    .setClienteId(clienteId)
+                    .build()
+            )
+            .build()
+
+        val erro = assertThrows<StatusRuntimeException> { grpcClient.consulta(request) }
+        with(erro) {
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+        }
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["", "   "])
+    internal fun `nao deve buscar com valor de chave invalido`(valorChave: String) {
+
+        val request = ConsultaPixRequest
+            .newBuilder()
+            .setChave(valorChave)
+            .build()
+
+        val erro = assertThrows<StatusRuntimeException> { grpcClient.consulta(request) }
+        with(erro) {
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+        }
+
+    }
+
+    @Test
+    internal fun `nao deve buscar chave com request sem dados`() {
+        val request = ConsultaPixRequest
+            .newBuilder()
+            .build()
+
+        val erro = assertThrows<StatusRuntimeException> { grpcClient.consulta(request) }
+        with(erro) {
+            assertEquals(Status.UNKNOWN.code, status.code)
+            assertEquals("UNKNOWN: Consulta não informada", message)
+        }
+    }
 
     @Factory
     class Cliente() {
@@ -279,24 +335,16 @@ internal class ConsultaPixEndpointTest(
         )
     ))
 
-    private fun criaConsultaInternaResponse(chavePix: ChavePix) = ConsultaPixResponse
-        .newBuilder()
-        .setClienteId(chavePix.idTitular)
-        .setPixId(chavePix.id)
-        .setTipoDeChave(br.com.zup.TipoDeChave.valueOf(chavePix.tipoDeChave.name))
-        .setValor(chavePix.valor)
-        .setTitular(Titular.newBuilder()
-            .setNome(chavePix.conta.titular)
-            .setCpf(chavePix.conta.cpf))
-        .setConta(br.com.zup.Conta.newBuilder()
-            .setTipo(br.com.zup.TipoDeConta.valueOf(chavePix.conta.tipo.name))
-            .setAgencia(chavePix.conta.agencia)
-            .setNumero(chavePix.conta.numero)
-            .setInstituicao("ITAÚ"))
-        .setCriadaEm(Timestamp.newBuilder()
-            .setSeconds(chavePix.criadaEm.toInstant(ZoneOffset.of("Z")).epochSecond)
-            .setNanos(chavePix.criadaEm.toInstant(ZoneOffset.of("Z")).nano)
-        )
-        .build()
+    companion object {
+        @JvmStatic
+        private fun geraDadosInvalidos(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("", UUID.randomUUID().toString()),
+                Arguments.of(UUID.randomUUID().toString(), ""),
+                Arguments.of("12345", "12345"),
+                Arguments.of("12345", UUID.randomUUID().toString()),
+                Arguments.of(UUID.randomUUID().toString(), "12345"),
+            )
+    }
 
 }
