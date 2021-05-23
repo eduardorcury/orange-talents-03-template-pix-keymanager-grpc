@@ -1,18 +1,42 @@
 micronaut:
   application:
     name: keymanagerGrpc
+  server:
+    port: 8081
 datasources:
   default:
-    url: jdbc:mysql://localhost:3306/keymanager-grpc?serverTimezone=UTC
+    url: jdbc:mysql://${DB_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE_NAME:keymanager-grpc}?serverTimezone=UTC
     driverClassName: com.mysql.cj.jdbc.Driver
-    username: eduardo
-    password: password
+    username: ${MYSQL_USER:eduardo}
+    password: ${MYSQL_PASSWORD:password}
     dialect: MYSQL
 #    schema-generate: CREATE_DROP
-jpa.default.properties.hibernate.hbm2ddl.auto: create-drop
+jpa.default.properties.hibernate.hbm2ddl.auto: update
 
 sistemas:
   erp:
     url: ${ERP_URL:`http://localhost:9091`}
   bcb:
-    url: ${ERP_URL:`http://localhost:8082`}
+    url: ${BCB_URL:`http://localhost:8082`}
+
+endpoints:
+  all:
+    port: 8085
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: ANONYMOUS
+  loggers:
+    enabled: true
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true    # default: true
+    sensitive: false  # default: true
+
+logger:
+  levels:
+    io.micronaut.transaction: DEBUG
+    io.micronaut.http.client: TRACE
+    org.hibernate: DEBUG

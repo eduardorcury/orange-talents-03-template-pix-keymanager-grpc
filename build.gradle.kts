@@ -18,6 +18,7 @@ repositories {
 }
 
 micronaut {
+    runtime("netty")
     testRuntime("junit5")
     processing {
         incremental(true)
@@ -56,12 +57,14 @@ dependencies {
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.xml:micronaut-jackson-xml")
 
-}
+    compile("io.micronaut:micronaut-management")
 
+}
 
 application {
     mainClass.set("br.com.zup.ApplicationKt")
 }
+
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
 }
@@ -75,6 +78,11 @@ tasks {
     compileTestKotlin {
         kotlinOptions {
             jvmTarget = "11"
+        }
+    }
+    withType<Jar>() {
+        manifest {
+            attributes["Main-class"] = application.mainClass
         }
     }
 

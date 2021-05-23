@@ -54,7 +54,7 @@ internal class HttpClientExceptionHandlerTest {
         val status: Status = handler.handle(HttpClientException(mensagem))
 
         with(status) {
-            assertEquals(Code.INTERNAL_VALUE, code)
+            assertEquals(Code.ALREADY_EXISTS_VALUE, code)
             assertEquals("Erro de tipo ${problema.type}, ${problema.status}. " +
                     "${problema.title}: ${problema.detail}.", message)
         }

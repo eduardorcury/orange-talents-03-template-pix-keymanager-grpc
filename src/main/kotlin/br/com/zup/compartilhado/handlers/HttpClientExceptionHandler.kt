@@ -22,7 +22,7 @@ class HttpClientExceptionHandler : ExceptionHandler<HttpClientException> {
             with(problem) {
                 if (violations == null) {
                     return Status.newBuilder()
-                        .setCode(Code.INTERNAL_VALUE)
+                        .setCode(Code.ALREADY_EXISTS_VALUE)
                         .setMessage("Erro de tipo $type, $status. $title: $detail.")
                         .build()
                 }
