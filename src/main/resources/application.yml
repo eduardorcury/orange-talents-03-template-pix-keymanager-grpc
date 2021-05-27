@@ -5,17 +5,18 @@ micronaut:
     port: 8081
 datasources:
   default:
-    url: jdbc:mysql://${DB_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE_NAME:keymanager-grpc}?serverTimezone=UTC
-    driverClassName: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_USER:eduardo}
-    password: ${MYSQL_PASSWORD:password}
-    dialect: MYSQL
+    url: jdbc:${DB_URI:`mysql://localhost:3306/keymanager-grpc?serverTimezone=UTC`}
+    # url: jdbc:mysql://${DB_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE_NAME:keymanager-grpc}?serverTimezone=UTC
+    # driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:eduardo}
+    password: ${DB_PASSWORD:password}
+    dialect: ${DB_DIALECT:MYSQL}
 #    schema-generate: CREATE_DROP
 jpa.default.properties.hibernate.hbm2ddl.auto: update
 
 sistemas:
   erp:
-    url: ${ERP_URL:`http://localhost:9091`}
+    url: ${ITAU_URL:`http://localhost:9091`}
   bcb:
     url: ${BCB_URL:`http://localhost:8082`}
 
