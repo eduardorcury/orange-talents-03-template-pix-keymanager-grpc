@@ -25,7 +25,7 @@ class ExceptionHandlerInterceptor(
         } catch (e: Exception) {
             resolver.resolve(e)
                 .handle(e)
-                .let { status ->  StatusProto.toStatusException(status) }
+                .let { status ->  StatusProto.toStatusRuntimeException(status) }
                 .run { GrpcEndpointArguments(context).response().onError(this) }
                 .also { LOGGER.error("""
                     Handling the exception ${e.javaClass.name} 
