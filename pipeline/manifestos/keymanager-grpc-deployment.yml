@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-keymanager-grpc
+spec:
+  template:
+    metadata:
+      name: keymanager-grpc
+      labels:
+        api: keymanager-grpc
+    spec:
+      containers:
+        - name: keymanager-grpc-container
+          image: public.ecr.aws/d8b2x5c9/keymanager-grpc
+          envFrom:
+            - configKeyRef:
+                name: keymanager-grpc-configmap
+            - secretRef:
+                name: keymanager-grpc-secrets
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 8085
+              scheme: HTTP
+            initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 8085
+              scheme: HTTP
+            initialDelaySeconds: 60
+  replicas: 2
+  selector:
+    matchLabels:
+      api: keymanager-grpc
