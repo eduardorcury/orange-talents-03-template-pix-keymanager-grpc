@@ -5,24 +5,54 @@ phases:
     runtime-versions:
       docker: 18
       java: corretto11
+    commands:
+      # Instala o meio de autenticação com o Kubernetes cluster. Fonte: https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
+      - curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+      - chmod +x ./aws-iam-authenticator
+      - mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
+      - echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+      # Instala o kubectl. Fonte: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+      - curl -LO https://dl.k8s.io/release/v1.19.0/bin/linux/amd64/kubectl
+      - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      - kubectl version
+      # Instala o AWS CLI. Fonte: https://docs.aws.amazon.com/pt_br/cli/latest/userguide/install-cliv2-linux.html
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - sudo ./aws/install
+      - aws --version
+
+  pre_build:
+    commands:
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCOUNT_ID="$account_id"
+      - echo Connecting to ERC...
+      # Conectando ao ecr. Fonte: https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # Criando arquivo kubeconfig. Fonte: https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
+      - aws eks --region us-east-1 update-kubeconfig --name cluster-eduardocury
+
   build:
     commands:
       - IMAGE_REPO_NAME=keymanager-grpc-eduardocury
-      - AWS_ACCOUNT_ID="$account_id"
       - IMAGE_TAG=latest
       - echo Building on `date`
       - java -version
       - echo Building docker image...
-      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker build -t keymanager-grpc:$IMAGE_TAG .
+      - docker tag keymanager-grpc:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - echo Building app jar...
       - sh gradlew clean build
   post_build:
     commands:
-      - AWS_DEFAULT_REGION=us-east-1
       - echo Build completed on `date`
+      # Faz o push da imagem ao ECR
       - echo Pushing docker image...
-      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      # Cria os nodes/services especificados na pasta pipeline/manifestos
+      - echo Deploying to cluster...
+      - kubectl apply -f pipeline/manifestos
+      # Referência: https://docs.aws.amazon.com/cli/latest/reference/eks/update-kubeconfig.html
+      - aws eks --region us-east-1 update-kubeconfig --name cluster-eduardocury --role-arn eksRole-eduardocury
       - printf '[{"name":"codebuild-docker","image_uri:%s"}]' public.ecr.aws/$AWS_ACCOUNT_ID/$IMAGE_REPO_NAME:$IMAGE_TAG > dadosImagem.json
 
 artifacts:
