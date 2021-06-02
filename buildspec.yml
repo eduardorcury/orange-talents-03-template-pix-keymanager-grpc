@@ -1,0 +1,32 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+      java: corretto11
+  build:
+    commands:
+      - IMAGE_REPO_NAME=keymanager-grpc-eduardocury
+      - AWS_ACCOUNT_ID="$account_id"
+      - IMAGE_TAG=latest
+      - echo Building on `date`
+      - java -version
+      - echo Building docker image...
+      - docker build -t public.ecr.aws/$AWS_ACCOUNT_ID/$IMAGE_REPO_NAME:$IMAGE_TAG .
+      - echo Building app jar...
+      - sh gradlew clean build
+  post_build:
+    commands:
+      - AWS_DEFAULT_REGION=us-east-1
+      - echo Build completed on `date`
+      - echo Pushing docker image...
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - docker push public.ecr.aws/$AWS_ACCOUNT_ID/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - printf '[{"name":"codebuild-docker","image_uri:%s"}]' public.ecr.aws/$AWS_ACCOUNT_ID/$IMAGE_REPO_NAME:$IMAGE_TAG > dadosImagem.json
+
+artifacts:
+  files:
+    - dadosImagem.json
+    - build/libs/*-all.jar
+
