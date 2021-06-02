@@ -1,9 +1,7 @@
-FROM gradle:jdk11 AS builder
+FROM openjdk:11
 WORKDIR /app
 COPY . .
-RUN gradle build
-
-FROM openjdk:11
-COPY --from=builder /app/build/libs/keymanager-grpc-0.1-all.jar /app/app.jar
+RUN sh gradlew build
 EXPOSE 50051
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+EXPOSE 8081
+ENTRYPOINT ["java","-jar","/app/build/libs/*-all.jar"]
