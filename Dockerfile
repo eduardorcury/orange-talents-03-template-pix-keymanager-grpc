@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM public.ecr.aws/bitnami/java:11-prod
 WORKDIR /app
 COPY . .
 RUN sh gradlew build
