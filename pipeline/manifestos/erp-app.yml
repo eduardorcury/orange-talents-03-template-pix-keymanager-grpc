@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metatada:
+  name: deployment-erp
+spec:
+  template:
+    metadata:
+      name: api-erp
+      labels:
+        api: erp
+    spec:
+      containers:
+        - name: erp-container
+          image: public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp
+          ports:
+            - containerPort: 9091
+  replicas: 2
+  selector:
+    matchLabels:
+      api: erp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-erp
+spec:
+  type: ClusterIP
+  selector:
+    api: bcb
+  ports:
+    - port: 9091
+      targetPort: 9091

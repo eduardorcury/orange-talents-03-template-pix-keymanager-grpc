@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: keymanager-grpc-container
-          image: public.ecr.aws/d8b2x5c9/keymanager-grpc
+          image: public.ecr.aws/c9y1i6i4/keymanager-grpc-eduardocury:latest
           envFrom:
             - configMapRef:
                 name: keymanager-grpc-configmap
@@ -31,7 +31,7 @@ spec:
               scheme: HTTP
             periodSeconds: 20
             initialDelaySeconds: 10
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       api: keymanager-grpc

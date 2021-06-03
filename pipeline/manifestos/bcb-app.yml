@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-bcb
+spec:
+  template:
+    metadata:
+      name: api-bcb
+      labels:
+        api: bcb
+    spec:
+      containers:
+        - name: bcb-container
+          image: public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix
+          ports:
+            - containerPort: 8082
+  replicas: 2
+  selector:
+    matchLabels:
+      api: bcb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-bcb
+spec:
+  type: ClusterIP
+  selector:
+    api: bcb
+  ports:
+    - port: 8082
+      targetPort: 8082
