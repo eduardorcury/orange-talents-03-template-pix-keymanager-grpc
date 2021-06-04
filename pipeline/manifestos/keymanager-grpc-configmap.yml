@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: keymanager-grpc-configmap
 data:
-  DB_URI: postgresql://keymanager-db-eduardocury.cvkl7pbhtcev.us-east-1.rds.amazonaws.com:5432
+  DB_URI: postgresql://pix-db-eduardocury.cvkl7pbhtcev.us-east-1.rds.amazonaws.com:5432/keymanager
   DB_USER: postgres
   ITAU_URL: http://svc-erp:9091
   BCB_URL: http://svc-bcb:8082
