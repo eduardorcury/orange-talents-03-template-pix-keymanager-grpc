@@ -5,4 +5,4 @@ RUN sh gradlew build
 EXPOSE 50051
 EXPOSE 8081
 EXPOSE 8085
-ENTRYPOINT ["java","-jar","/app/build/libs/*-all.jar"]
+ENTRYPOINT ["java","-jar","/app/build/libs/keymanager-grpc-0.1-all.jar"]
