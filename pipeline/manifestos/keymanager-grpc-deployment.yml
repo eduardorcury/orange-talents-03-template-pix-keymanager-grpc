@@ -23,14 +23,14 @@ spec:
               port: 8085
               scheme: HTTP
             periodSeconds: 20
-            initialDelaySeconds: 10
+            initialDelaySeconds: 120
           readinessProbe:
             httpGet:
               path: /health/readiness
               port: 8085
               scheme: HTTP
             periodSeconds: 20
-            initialDelaySeconds: 10
+            initialDelaySeconds: 120
   replicas: 3
   selector:
     matchLabels:
